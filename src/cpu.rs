@@ -131,6 +131,8 @@ impl CPU {
                 0xC9 | 0xC5 | 0xD5 | 0xCD | 0xDD | 0xD9 | 0xC1 | 0xD1 => self.compare(&opcode.mode, self.register_a),
                 /* CPX */
                 0xE0 | 0xE4 | 0xEC => self.compare(&opcode.mode, self.register_x),
+                /* CPY */
+                0xC0 | 0xC4 | 0xCC => self.compare(&opcode.mode, self.register_y),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */

@@ -115,6 +115,11 @@ lazy_static! {
         OpCode::new(0xe0, "CPX", 2, 2, AddressingMode::Immediate),
         OpCode::new(0xe4, "CPX", 2, 3, AddressingMode::ZeroPage),
         OpCode::new(0xec, "CPX", 2, 3, AddressingMode::Absolute),
+        
+        /*CPY - Compare Y Register */
+        OpCode::new(0xc0, "CPY", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0xc4, "CPY", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0xcc, "CPY", 2, 3, AddressingMode::Absolute),
     ];
 
 
