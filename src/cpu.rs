@@ -125,6 +125,8 @@ impl CPU {
                 0xD8 => self.status.remove(CpuFlags::DECIMAL_MODE),
                 /* CLI */
                 0x58 => self.status.remove(CpuFlags::INTERRUPT_DISABLE),
+                /* CLV */
+                0xB8 => self.status.remove(CpuFlags::OVERFLOW),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */

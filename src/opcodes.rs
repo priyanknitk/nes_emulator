@@ -97,6 +97,9 @@ lazy_static! {
 
         /*CLI - Clear Interrupt Disable */
         OpCode::new(0x58, "CLI", 1, 2, AddressingMode::NoneAddressing),
+
+        /*CLV - Clear Overflow Flag */
+        OpCode::new(0xb8, "CLV", 1, 2, AddressingMode::NoneAddressing),
     ];
 
 
