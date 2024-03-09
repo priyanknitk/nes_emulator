@@ -139,6 +139,8 @@ impl CPU {
                 0xCA => self.decx(&opcode.mode),
                 /* DEY */
                 0x88 => self.decy(&opcode.mode),
+                /* EOR */
+                0x49 | 0x45 | 0x55 | 0x4D | 0x5D | 0x59 | 0x41 | 0x51 => self.eor(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -279,6 +281,12 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
         self.set_register_a(self.register_a & value);
+    }
+
+    fn eor(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        self.set_register_a(self.register_a ^ value);
     }
 
     fn sta(&mut self, mode: &AddressingMode) {
