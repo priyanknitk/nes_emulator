@@ -113,6 +113,8 @@ impl CPU {
                 0x24 | 0x2C => self.bit(&opcode.mode),
                 /* BMI */
                 0x30 => self.bmi(&opcode.mode),
+                /* BPL */
+                0x10 => self.bpl(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -181,6 +183,13 @@ impl CPU {
 
     fn bmi(&mut self, mode: &AddressingMode) {
         if self.status.contains(CpuFlags::NEGATIV) {
+            let addr = self.get_operand_address(mode);
+            self.program_counter = addr;
+        }
+    }
+
+    fn bpl(&mut self, mode: &AddressingMode) {
+        if !self.status.contains(CpuFlags::NEGATIV) {
             let addr = self.get_operand_address(mode);
             self.program_counter = addr;
         }
