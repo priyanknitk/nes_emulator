@@ -85,6 +85,9 @@ lazy_static! {
 
         /*BVC - Branch if Overflow Clear */
         OpCode::new(0x50, "BVC", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
+
+        /*BVS - Branch if Overflow Set */
+        OpCode::new(0x70, "BVS", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
     ];
 
 
