@@ -94,6 +94,9 @@ lazy_static! {
 
         /*CLD - Clear Decimal Mode */
         OpCode::new(0xd8, "CLD", 1, 2, AddressingMode::NoneAddressing),
+
+        /*CLI - Clear Interrupt Disable */
+        OpCode::new(0x58, "CLI", 1, 2, AddressingMode::NoneAddressing),
     ];
 
 

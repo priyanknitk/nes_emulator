@@ -123,6 +123,8 @@ impl CPU {
                 0x18 => self.status.remove(CpuFlags::CARRY),
                 /* CLD */
                 0xD8 => self.status.remove(CpuFlags::DECIMAL_MODE),
+                /* CLI */
+                0x58 => self.status.remove(CpuFlags::INTERRUPT_DISABLE),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
