@@ -66,7 +66,9 @@ lazy_static! {
 
         /*BCS - Branch Carry if Set*/
         OpCode::new(0xb0, "BCS", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
-        
+
+        /*BEQ - Branch Carry if equal */
+        OpCode::new(0xf0, "BEQ", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
     ];
 
 

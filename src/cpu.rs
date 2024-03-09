@@ -105,6 +105,8 @@ impl CPU {
                 0x90 => self.bcc(&opcode.mode),
                 /* BCS */
                 0xB0 => self.bcs(&opcode.mode),
+                /* BEQ */
+                0xF0 => self.beq(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -138,6 +140,13 @@ impl CPU {
 
     fn bcs(&mut self, mode: &AddressingMode) {
         if self.status & 0b0000_0001 != 0 {
+            let addr = self.get_operand_address(mode);
+            self.program_counter = addr;
+        }
+    }
+
+    fn beq(&mut self, mode: &AddressingMode) {
+        if self.status & 0b0000_0010 != 0 {
             let addr = self.get_operand_address(mode);
             self.program_counter = addr;
         }
