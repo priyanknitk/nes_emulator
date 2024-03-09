@@ -63,6 +63,9 @@ lazy_static! {
 
         /*BCC - Branch Carry if Clear */
         OpCode::new(0x90, "BCC", 2, 2, AddressingMode::NoneAddressing),
+
+        /*BCS - Branch Carry if Set*/
+        OpCode::new(0xb0, "BCS", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
         
     ];
 
