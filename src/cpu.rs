@@ -129,6 +129,8 @@ impl CPU {
                 0xB8 => self.status.remove(CpuFlags::OVERFLOW),
                 /* CMP */
                 0xC9 | 0xC5 | 0xD5 | 0xCD | 0xDD | 0xD9 | 0xC1 | 0xD1 => self.compare(&opcode.mode, self.register_a),
+                /* CPX */
+                0xE0 | 0xE4 | 0xEC => self.compare(&opcode.mode, self.register_x),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
