@@ -119,6 +119,10 @@ impl CPU {
                 0x50 => self.bvc(&opcode.mode),
                 /* BVS */
                 0x70 => self.bvs(&opcode.mode),
+                /* CLC */
+                0x18 => self.status.remove(CpuFlags::CARRY),
+                /* CLD */
+                0xD8 => self.status.remove(CpuFlags::DECIMAL_MODE),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */

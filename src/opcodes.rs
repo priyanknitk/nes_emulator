@@ -88,6 +88,12 @@ lazy_static! {
 
         /*BVS - Branch if Overflow Set */
         OpCode::new(0x70, "BVS", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
+
+        /*CLC - Clear Carry Flag */
+        OpCode::new(0x18, "CLC", 1, 2, AddressingMode::NoneAddressing),
+
+        /*CLD - Clear Decimal Mode */
+        OpCode::new(0xd8, "CLD", 1, 2, AddressingMode::NoneAddressing),
     ];
 
 
