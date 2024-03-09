@@ -127,6 +127,8 @@ impl CPU {
                 0x58 => self.status.remove(CpuFlags::INTERRUPT_DISABLE),
                 /* CLV */
                 0xB8 => self.status.remove(CpuFlags::OVERFLOW),
+                /* CMP */
+                0xC9 | 0xC5 | 0xD5 | 0xCD | 0xDD | 0xD9 | 0xC1 | 0xD1 => self.compare(&opcode.mode, self.register_a),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -219,6 +221,20 @@ impl CPU {
             let addr = self.get_operand_address(mode);
             self.program_counter = addr;
         }
+    }
+
+    fn compare(&mut self, mode: &AddressingMode, compare_with: u8) {
+        let addr = self.get_operand_address(mode);
+        let data = self.mem_read(addr);
+        let result = compare_with.wrapping_sub(data);
+
+        if compare_with >= data {
+            self.status.insert(CpuFlags::CARRY);
+        } else {
+            self.status.remove(CpuFlags::CARRY);
+        }
+
+        self.update_zero_and_negative_flags(result);
     }
 
     fn asl(&mut self, mode: &AddressingMode) {
