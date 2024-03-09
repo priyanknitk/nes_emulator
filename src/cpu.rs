@@ -99,6 +99,8 @@ impl CPU {
                 0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(&opcode.mode),
                 /* STA */
                 0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91 => self.sta(&opcode.mode),
+                /* ASL */
+                0x0A | 0x06 | 0x16 | 0x0E | 0x1E => todo!(),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -123,6 +125,14 @@ impl CPU {
         self.set_register_x(self.register_a);
     }
 
+    fn asl(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        let result = value << 1;
+        self.mem_write(addr, result);
+        self.update_zero_and_negative_flags(result);
+    }
+    
     fn inx(&mut self) {
         self.set_register_x(self.register_x.wrapping_add(1));
     }
