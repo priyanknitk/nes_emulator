@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::opcodes;
+use crate::{cpu_flags::CpuFlags, opcodes};
 
 #[derive(Debug)]
 #[allow(non_camel_case_types)]
@@ -40,7 +40,7 @@ pub struct CPU {
     pub register_a: u8,
     pub register_x: u8,
     pub register_y: u8,
-    pub status: u8,
+    pub status: CpuFlags,
     pub program_counter: u16,
     memory: [u8; 0xffff],
 }
@@ -61,7 +61,7 @@ impl CPU {
             register_a: 0,
             register_x: 0,
             register_y: 0,
-            status: 0,
+            status: CpuFlags::from_bits_truncate(0b100100),
             program_counter: 0,
             memory: [0; 0xffff],
         }
@@ -82,7 +82,7 @@ impl CPU {
         self.register_a = 0;
         self.register_x = 0;
         self.register_y = 0;
-        self.status = 0;
+        self.status = CpuFlags::from_bits_truncate(0b100100);
         self.program_counter = self.mem_read_u16(0xFFFC);
     }
 
@@ -109,6 +109,8 @@ impl CPU {
                 0xF0 => self.beq(&opcode.mode),
                 /* BNE */
                 0xD0 => self.bne(&opcode.mode),
+                /* BIT */
+                0x24 | 0x2C => self.bit(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -134,31 +136,45 @@ impl CPU {
     }
 
     fn bcc(&mut self, mode: &AddressingMode) {
-        if self.status & 0b0000_0001 == 0 {
+        if !self.status.contains(CpuFlags::CARRY) {
             let addr = self.get_operand_address(mode);
             self.program_counter = addr;
         }
     }
 
     fn bcs(&mut self, mode: &AddressingMode) {
-        if self.status & 0b0000_0001 != 0 {
+        if self.status.contains(CpuFlags::CARRY) {
             let addr = self.get_operand_address(mode);
             self.program_counter = addr;
         }
     }
 
     fn beq(&mut self, mode: &AddressingMode) {
-        if self.status & 0b0000_0010 != 0 {
+        if self.status.contains(CpuFlags::ZERO) {
             let addr = self.get_operand_address(mode);
             self.program_counter = addr;
         }
     }
 
     fn bne(&mut self, mode: &AddressingMode) {
-        if self.status & 0b0000_0010 == 0 {
+        if !self.status.contains(CpuFlags::ZERO) {
             let addr = self.get_operand_address(mode);
             self.program_counter = addr;
         }
+    }
+
+    fn bit(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let data = self.mem_read(addr);
+        let and = self.register_a & data;
+        if and == 0 {
+            self.status.insert(CpuFlags::ZERO);
+        } else {
+            self.status.remove(CpuFlags::ZERO);
+        }
+
+        self.status.set(CpuFlags::NEGATIV, data & 0b10000000 > 0);
+        self.status.set(CpuFlags::OVERFLOW, data & 0b01000000 > 0);
     }
 
     fn asl(&mut self, mode: &AddressingMode) {
@@ -186,15 +202,15 @@ impl CPU {
 
     fn update_zero_and_negative_flags(&mut self, result: u8) {
         if result == 0 {
-            self.status = self.status | 0b0000_0010;
+            self.status.insert(CpuFlags::ZERO);
         } else {
-            self.status = self.status & 0b1111_1101;
+            self.status.remove(CpuFlags::ZERO)
         }
 
         if result & 0b1000_0000 != 0 {
-            self.status = self.status | 0b1000_0000;
+            self.status.insert(CpuFlags::NEGATIV);
         } else {
-            self.status = self.status & 0b0111_1111;
+            self.status.remove(CpuFlags::NEGATIV);
         }
     }
 
