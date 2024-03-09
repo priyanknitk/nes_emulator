@@ -69,6 +69,9 @@ lazy_static! {
 
         /*BEQ - Branch Carry if equal */
         OpCode::new(0xf0, "BEQ", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
+
+        /*BNE - Branch Carry if not equal */
+        OpCode::new(0xd0, "BNE", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
     ];
 
 
