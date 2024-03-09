@@ -126,6 +126,12 @@ lazy_static! {
         OpCode::new(0xd6, "DEC", 2, 6, AddressingMode::ZeroPage_X),
         OpCode::new(0xce, "DEC", 3, 6, AddressingMode::Absolute),
         OpCode::new(0xde, "DEC", 3, 7, AddressingMode::Absolute_X),
+        
+        /*DEX - Decrement X Register */
+        OpCode::new(0xca, "DEX", 1, 2, AddressingMode::NoneAddressing),
+
+        /*DEY - Decrement Y Register */
+        OpCode::new(0x88, "DEY", 1, 2, AddressingMode::NoneAddressing),
     ];
 
 
