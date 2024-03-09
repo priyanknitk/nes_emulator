@@ -100,7 +100,7 @@ impl CPU {
                 /* STA */
                 0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91 => self.sta(&opcode.mode),
                 /* ASL */
-                0x0A | 0x06 | 0x16 | 0x0E | 0x1E => todo!(),
+                0x0A | 0x06 | 0x16 | 0x0E | 0x1E => self.asl(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -132,7 +132,7 @@ impl CPU {
         self.mem_write(addr, result);
         self.update_zero_and_negative_flags(result);
     }
-    
+
     fn inx(&mut self) {
         self.set_register_x(self.register_x.wrapping_add(1));
     }
