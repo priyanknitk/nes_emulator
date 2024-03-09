@@ -133,6 +133,8 @@ impl CPU {
                 0xE0 | 0xE4 | 0xEC => self.compare(&opcode.mode, self.register_x),
                 /* CPY */
                 0xC0 | 0xC4 | 0xCC => self.compare(&opcode.mode, self.register_y),
+                /* DEC */
+                0xc6 | 0xd6 | 0xce | 0xde => self.dec(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -238,6 +240,14 @@ impl CPU {
             self.status.remove(CpuFlags::CARRY);
         }
 
+        self.update_zero_and_negative_flags(result);
+    }
+
+    fn dec(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let data = self.mem_read(addr);
+        let result = data.wrapping_sub(1);
+        self.mem_write(addr, result);
         self.update_zero_and_negative_flags(result);
     }
 
