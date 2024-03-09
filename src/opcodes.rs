@@ -76,6 +76,9 @@ lazy_static! {
         /*BIT - Bit Test */
         OpCode::new(0x24, "BIT", 2, 3, AddressingMode::ZeroPage),
         OpCode::new(0x2C, "BIT", 3, 4, AddressingMode::Absolute),
+
+        /*BMI - Branch If Minus */
+        OpCode::new(0x30, "BMI", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
     ];
 
 

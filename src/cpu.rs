@@ -111,6 +111,8 @@ impl CPU {
                 0xD0 => self.bne(&opcode.mode),
                 /* BIT */
                 0x24 | 0x2C => self.bit(&opcode.mode),
+                /* BMI */
+                0x30 => self.bmi(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -175,6 +177,13 @@ impl CPU {
 
         self.status.set(CpuFlags::NEGATIV, data & 0b10000000 > 0);
         self.status.set(CpuFlags::OVERFLOW, data & 0b01000000 > 0);
+    }
+
+    fn bmi(&mut self, mode: &AddressingMode) {
+        if self.status.contains(CpuFlags::NEGATIV) {
+            let addr = self.get_operand_address(mode);
+            self.program_counter = addr;
+        }
     }
 
     fn asl(&mut self, mode: &AddressingMode) {
