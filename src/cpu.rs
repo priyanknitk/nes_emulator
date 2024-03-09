@@ -101,6 +101,8 @@ impl CPU {
                 0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91 => self.sta(&opcode.mode),
                 /* ASL */
                 0x0A | 0x06 | 0x16 | 0x0E | 0x1E => self.asl(&opcode.mode),
+                /* BCC */
+                0x90 => self.bcc(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -123,6 +125,13 @@ impl CPU {
 
     fn tax(&mut self) {
         self.set_register_x(self.register_a);
+    }
+
+    fn bcc(&mut self, mode: &AddressingMode) {
+        if self.status & 0b0000_0001 == 0 {
+            let addr = self.get_operand_address(mode);
+            self.program_counter = addr;
+        }
     }
 
     fn asl(&mut self, mode: &AddressingMode) {

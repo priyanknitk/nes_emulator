@@ -60,6 +60,9 @@ lazy_static! {
         OpCode::new(0x16, "ASL", 2, 6, AddressingMode::ZeroPage_X),
         OpCode::new(0x0E, "ASL", 3, 6, AddressingMode::Absolute),
         OpCode::new(0x1E, "ASL", 3, 7, AddressingMode::Absolute_X),
+
+        /*BCC - Branch Carry if Clear */
+        OpCode::new(0x90, "BCC", 2, 2, AddressingMode::NoneAddressing),
         
     ];
 
