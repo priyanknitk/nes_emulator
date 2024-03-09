@@ -82,6 +82,9 @@ lazy_static! {
 
         /*BPL - Branch if positive */
         OpCode::new(0x10, "BPL", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
+
+        /*BVC - Branch if Overflow Clear */
+        OpCode::new(0x50, "BVC", 2, 2 /*(+1 if branch succeeds +2 if to a new page)*/, AddressingMode::NoneAddressing),
     ];
 
 

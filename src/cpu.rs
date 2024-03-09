@@ -115,6 +115,8 @@ impl CPU {
                 0x30 => self.bmi(&opcode.mode),
                 /* BPL */
                 0x10 => self.bpl(&opcode.mode),
+                /* BVC */
+                0x50 => self.bvc(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -190,6 +192,13 @@ impl CPU {
 
     fn bpl(&mut self, mode: &AddressingMode) {
         if !self.status.contains(CpuFlags::NEGATIV) {
+            let addr = self.get_operand_address(mode);
+            self.program_counter = addr;
+        }
+    }
+
+    fn bvc(&mut self, mode: &AddressingMode) {
+        if !self.status.contains(CpuFlags::OVERFLOW) {
             let addr = self.get_operand_address(mode);
             self.program_counter = addr;
         }
