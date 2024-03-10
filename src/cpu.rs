@@ -198,6 +198,12 @@ impl CPU {
                 },
                 /* RTS */
                 0x60 => self.program_counter = self.stack_pop_u16() + 1,
+                /* SEC */
+                0x38 => self.status.insert(CpuFlags::CARRY),
+                /* SED */
+                0xF8 => self.status.insert(CpuFlags::DECIMAL_MODE),
+                /* SEI */
+                0x78 => self.status.insert(CpuFlags::INTERRUPT_DISABLE),
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode.mode),
                 _ => todo!(),
