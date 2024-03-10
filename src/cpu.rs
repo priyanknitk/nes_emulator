@@ -183,6 +183,9 @@ impl CPU {
                 },
                 /* PLP */
                 0x28 => self.status = CpuFlags::from_bits_truncate(self.stack_pop()),
+                /* ROL */
+                0x2A => self.rol_accumulator(),
+                0x26 | 0x36 | 0x2E | 0x3E => self.rol(&opcode.mode),
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode.mode),
                 _ => todo!(),
@@ -218,6 +221,40 @@ impl CPU {
         self.stack_push_u16(self.program_counter + 2 - 1);
         let target_address = self.mem_read_u16(self.program_counter);
         self.program_counter = target_address
+    }
+
+    fn rol_accumulator(&mut self) {
+        let mut data = self.register_a;
+        let old_carry = self.status.contains(CpuFlags::CARRY);
+
+        if data >> 7 == 1 {
+            self.status.insert(CpuFlags::CARRY);
+        } else {
+            self.status.remove(CpuFlags::CARRY);
+        }
+        data = data << 1;
+        if old_carry {
+            data = data | 1;
+        }
+        self.set_register_a(data);
+    }
+
+    fn rol(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let mut data = self.mem_read(addr);
+        let old_carry = self.status.contains(CpuFlags::CARRY);
+
+        if data >> 7 == 1 {
+            self.status.insert(CpuFlags::CARRY);
+        } else {
+            self.status.remove(CpuFlags::CARRY);
+        }
+        data = data << 1;
+        if old_carry {
+            data = data | 1;
+        }
+        self.mem_write(addr, data);
+        self.update_zero_and_negative_flags(data);
     }
 
     fn jmp_indirect(&mut self) {
