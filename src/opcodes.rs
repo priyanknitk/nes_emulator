@@ -30,6 +30,7 @@ lazy_static! {
         OpCode::new(0xe8, "INX", 1, 2, AddressingMode::NoneAddressing),
         OpCode::new(0xc8, "INY", 1, 2, AddressingMode::NoneAddressing),
 
+        /* LDA - Load Accumulator */
         OpCode::new(0xa9, "LDA", 2, 2, AddressingMode::Immediate),
         OpCode::new(0xa5, "LDA", 2, 3, AddressingMode::ZeroPage),
         OpCode::new(0xb5, "LDA", 2, 4, AddressingMode::ZeroPage_X),
@@ -39,6 +40,7 @@ lazy_static! {
         OpCode::new(0xa1, "LDA", 2, 6, AddressingMode::Indirect_X),
         OpCode::new(0xb1, "LDA", 2, 5/*+1 if page crossed*/, AddressingMode::Indirect_Y),
 
+        /* STA - Store Accumulator */
         OpCode::new(0x85, "STA", 2, 3, AddressingMode::ZeroPage),
         OpCode::new(0x95, "STA", 2, 4, AddressingMode::ZeroPage_X),
         OpCode::new(0x8d, "STA", 3, 4, AddressingMode::Absolute),
@@ -238,6 +240,17 @@ lazy_static! {
 
         /* SEI - Set Interrupt Disable */
         OpCode::new(0x78, "SEI", 1, 2, AddressingMode::NoneAddressing),
+
+        /* STX - Store X Register */
+        OpCode::new(0x86, "STX", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0x96, "STX", 2, 4, AddressingMode::ZeroPage_Y),
+        OpCode::new(0x8e, "STX", 3, 4, AddressingMode::Absolute),
+
+        /* STY - Store Y Register */
+        OpCode::new(0x84, "STY", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0x94, "STY", 2, 4, AddressingMode::ZeroPage_X),
+        OpCode::new(0x8c, "STY", 3, 4, AddressingMode::ZeroPage_X),
+        
     ];
 
 

@@ -204,6 +204,10 @@ impl CPU {
                 0xF8 => self.status.insert(CpuFlags::DECIMAL_MODE),
                 /* SEI */
                 0x78 => self.status.insert(CpuFlags::INTERRUPT_DISABLE),
+                /* STX */
+                0x86 | 0x96 | 0x8E => self.mem_write(self.get_operand_address(&opcode.mode), self.register_x),
+                /* STY */
+                0x84 | 0x94 | 0x8C => self.mem_write(self.get_operand_address(&opcode.mode), self.register_y),
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode.mode),
                 _ => todo!(),
