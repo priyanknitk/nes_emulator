@@ -136,11 +136,13 @@ impl CPU {
                 /* DEC */
                 0xc6 | 0xd6 | 0xce | 0xde => self.dec(&opcode.mode),
                 /* DEX */
-                0xCA => self.decx(&opcode.mode),
+                0xCA => self.decx(),
                 /* DEY */
-                0x88 => self.decy(&opcode.mode),
+                0x88 => self.decy(),
                 /* EOR */
                 0x49 | 0x45 | 0x55 | 0x4D | 0x5D | 0x59 | 0x41 | 0x51 => self.eor(&opcode.mode),
+                /* INC */
+                0xE6 | 0xF6 | 0xEE | 0xFE => self.inc(&opcode.mode),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -257,12 +259,20 @@ impl CPU {
         self.update_zero_and_negative_flags(result);
     }
 
-    fn decx(&mut self, mode: &AddressingMode) {
+    fn decx(&mut self) {
         self.set_register_x(self.register_x.wrapping_sub(1));
     }
 
-    fn decy(&mut self, mode: &AddressingMode) {
+    fn decy(&mut self) {
         self.set_register_y(self.register_y.wrapping_sub(1));
+    }
+
+    fn inc(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let data = self.mem_read(addr);
+        let result = data.wrapping_add(1);
+        self.mem_write(addr, result);
+        self.update_zero_and_negative_flags(result);
     }
 
     fn asl(&mut self, mode: &AddressingMode) {

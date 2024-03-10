@@ -141,7 +141,13 @@ lazy_static! {
         OpCode::new(0x5D, "EOR", 3, 4, AddressingMode::Absolute_X),
         OpCode::new(0x59, "EOR", 3, 4, AddressingMode::Absolute_Y),
         OpCode::new(0x41, "EOR", 2, 6, AddressingMode::Indirect_X),
-        OpCode::new(0x51, "EOR", 2, 5, AddressingMode::Indirect_Y)
+        OpCode::new(0x51, "EOR", 2, 5, AddressingMode::Indirect_Y),
+        
+        /*INC - Increment Memory */
+        OpCode::new(0xe6, "INC", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0xf6, "INC", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0xee, "INC", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0xfe, "INC", 3, 7, AddressingMode::Absolute_X),
     ];
 
 
