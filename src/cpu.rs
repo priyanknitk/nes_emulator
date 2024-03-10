@@ -143,6 +143,10 @@ impl CPU {
                 0x49 | 0x45 | 0x55 | 0x4D | 0x5D | 0x59 | 0x41 | 0x51 => self.eor(&opcode.mode),
                 /* INC */
                 0xE6 | 0xF6 | 0xEE | 0xFE => self.inc(&opcode.mode),
+                /* JMP - Absolute */
+                0x4C => self.program_counter = self.mem_read_u16(self.program_counter),
+                /* JMP - Indirect */
+                0x6C =>self.jmp_indirect(),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -157,6 +161,19 @@ impl CPU {
                 self.program_counter += (opcode.len - 1) as u16;
             }
         }
+    }
+
+    fn jmp_indirect(&mut self) {
+        let addr = self.mem_read_u16(self.program_counter);
+        let indirect_ref = if addr & 0x00FF == 0x00FF {
+            let lo = self.mem_read(addr);
+            let hi = self.mem_read(addr & 0xFF00);
+            (hi as u16) << 8 | (lo as u16)
+        } else {
+            self.mem_read_u16(addr)
+        };
+
+        self.program_counter = indirect_ref;
     }
 
     fn lda(&mut self, mode: &AddressingMode) {
