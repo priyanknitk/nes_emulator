@@ -180,6 +180,16 @@ lazy_static! {
 
         /*NOP - No Operation */
         OpCode::new(0xea, "NOP", 1, 2, AddressingMode::NoneAddressing),
+
+        /* ORA - Logical Inclusive OR */
+        OpCode::new(0x09, "ORA", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0x05, "ORA", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0x15, "ORA", 2, 4, AddressingMode::ZeroPage_X),
+        OpCode::new(0x0d, "ORA", 3, 4, AddressingMode::Absolute),
+        OpCode::new(0x1d, "ORA", 3, 4, AddressingMode::Absolute_X),
+        OpCode::new(0x19, "ORA", 3, 4, AddressingMode::Absolute_Y),
+        OpCode::new(0x01, "ORA", 2, 6, AddressingMode::Indirect_X),
+        OpCode::new(0x11, "ORA", 2, 5, AddressingMode::Indirect_Y),
         
     ];
 
