@@ -103,6 +103,8 @@ impl CPU {
                 0x00 => return,
                 /* LDA  */
                 0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => self.lda(&opcode.mode),
+                /* LDX */
+                0xA2 | 0xA6 | 0xB6 | 0xAE | 0xBE => self.ldx(&opcode.mode),
                 /* STA */
                 0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91 => self.sta(&opcode.mode),
                 /* ASL */
@@ -134,9 +136,7 @@ impl CPU {
                 /* CLV */
                 0xB8 => self.status.remove(CpuFlags::OVERFLOW),
                 /* CMP */
-                0xC9 | 0xC5 | 0xD5 | 0xCD | 0xDD | 0xD9 | 0xC1 | 0xD1 => {
-                    self.compare(&opcode.mode, self.register_a)
-                }
+                0xC9 | 0xC5 | 0xD5 | 0xCD | 0xDD | 0xD9 | 0xC1 | 0xD1 => self.compare(&opcode.mode, self.register_a),
                 /* CPX */
                 0xE0 | 0xE4 | 0xEC => self.compare(&opcode.mode, self.register_x),
                 /* CPY */
@@ -217,6 +217,12 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
         self.set_register_a(value);
+    }
+
+    fn ldx(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        self.set_register_x(value);
     }
 
     fn tax(&mut self) {
