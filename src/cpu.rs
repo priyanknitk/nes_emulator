@@ -147,6 +147,8 @@ impl CPU {
                 0xAA => self.tax(),
                 /* INX */
                 0xE8 => self.inx(),
+                /* INY */
+                0xC8 => self.iny(),
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode.mode),
                 _ => todo!(),
@@ -285,6 +287,10 @@ impl CPU {
 
     fn inx(&mut self) {
         self.set_register_x(self.register_x.wrapping_add(1));
+    }
+
+    fn iny(&mut self) {
+        self.set_register_y(self.register_y.wrapping_add(1));
     }
 
     fn and(&mut self, mode: &AddressingMode) {
