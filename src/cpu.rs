@@ -161,6 +161,8 @@ impl CPU {
                 0x20 => self.jsr(),
                 /* TAX */
                 0xAA => self.tax(),
+                /* TAY */
+                0xA8 => self.set_register_y(self.register_a),
                 /* INX */
                 0xE8 => self.inx(),
                 /* INY */
@@ -208,6 +210,14 @@ impl CPU {
                 0x86 | 0x96 | 0x8E => self.mem_write(self.get_operand_address(&opcode.mode), self.register_x),
                 /* STY */
                 0x84 | 0x94 | 0x8C => self.mem_write(self.get_operand_address(&opcode.mode), self.register_y),
+                /* TSX */
+                0xBA => self.set_register_x(self.stack_pointer),
+                /* TXA */
+                0x8A => self.set_register_a(self.register_x),
+                /* TXS */
+                0x9A => self.stack_pointer = self.register_x,
+                /* TYA */
+                0x98 => self.set_register_a(self.register_y),
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode.mode),
                 _ => todo!(),
