@@ -166,7 +166,8 @@ impl CPU {
                 /* INY */
                 0xC8 => self.iny(),
                 /* LSR */
-                0x4A | 0x46 | 0x56 | 0x4E | 0x5E => self.lsr(&opcode.mode),
+                0x4A => self.lsr_accumulator(),
+                0x46 | 0x56 | 0x4E | 0x5E => self.lsr(&opcode.mode),
                 /* NOP */
                 0xEA => (),
                 /* ORA */
@@ -376,6 +377,17 @@ impl CPU {
         let result = value >> 1;
         self.mem_write(addr, result);
         self.update_zero_and_negative_flags(result);
+        if value & 1 == 1 {
+            self.status.insert(CpuFlags::CARRY);
+        } else {
+            self.status.remove(CpuFlags::CARRY);
+        }
+    }
+
+    fn lsr_accumulator(&mut self) {
+        let value = self.register_a;
+        let result = value >> 1;
+        self.set_register_a(result);
         if value & 1 == 1 {
             self.status.insert(CpuFlags::CARRY);
         } else {
