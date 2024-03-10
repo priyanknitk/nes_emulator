@@ -169,6 +169,8 @@ impl CPU {
                 0x4A | 0x46 | 0x56 | 0x4E | 0x5E => self.lsr(&opcode.mode),
                 /* NOP */
                 0xEA => (),
+                /* ORA */
+                0x09 | 0x05 | 0x15 | 0x0D | 0x1D | 0x19 | 0x01 | 0x11 => self.set_register_a(self.register_a | self.mem_read(self.get_operand_address(&opcode.mode))),
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode.mode),
                 _ => todo!(),
