@@ -79,8 +79,8 @@ impl CPU {
     }
 
     pub fn load(&mut self, program: Vec<u8>) {
-        self.memory[0x8000..0x8000 + program.len()].copy_from_slice(&program);
-        self.mem_write_u16(0xFFFC, 0x8000);
+        self.memory[0x0600..0x0600 + program.len()].copy_from_slice(&program);
+        self.mem_write_u16(0xFFFC, 0x0600);
     }
 
     pub fn reset(&mut self) {
@@ -93,12 +93,21 @@ impl CPU {
     }
 
     pub fn run(&mut self) {
+        self.run_with_callback(|_| {});
+    }
+
+    pub fn run_with_callback<F>(&mut self, mut callback: F)
+    where
+        F: FnMut(&mut CPU),
+    {
         let ref opcodes: HashMap<u8, &'static opcodes::OpCode> = *opcodes::OPCODES_MAP;
         loop {
+            callback(self);
             let code = self.mem_read(self.program_counter);
             self.program_counter += 1;
             let opcode = opcodes.get(&code).expect("opcode not found");
             let program_counter_state = self.program_counter;
+            println!("opcode: {}, pc: {:x}", opcode.code, self.program_counter);
             match code {
                 0x00 => return,
                 /* LDA  */
@@ -112,23 +121,23 @@ impl CPU {
                 /* ASL */
                 0x0A | 0x06 | 0x16 | 0x0E | 0x1E => self.asl(&opcode.mode),
                 /* BCC */
-                0x90 => self.bcc(&opcode.mode),
+                0x90 => self.bcc(),
                 /* BCS */
-                0xB0 => self.bcs(&opcode.mode),
+                0xB0 => self.bcs(),
                 /* BEQ */
-                0xF0 => self.beq(&opcode.mode),
+                0xF0 => self.beq(),
                 /* BNE */
-                0xD0 => self.bne(&opcode.mode),
+                0xD0 => self.bne(),
                 /* BIT */
                 0x24 | 0x2C => self.bit(&opcode.mode),
                 /* BMI */
-                0x30 => self.bmi(&opcode.mode),
+                0x30 => self.bmi(),
                 /* BPL */
-                0x10 => self.bpl(&opcode.mode),
+                0x10 => self.bpl(),
                 /* BVC */
-                0x50 => self.bvc(&opcode.mode),
+                0x50 => self.bvc(),
                 /* BVS */
-                0x70 => self.bvs(&opcode.mode),
+                0x70 => self.bvs(),
                 /* CLC */
                 0x18 => self.status.remove(CpuFlags::CARRY),
                 /* CLD */
@@ -411,32 +420,32 @@ impl CPU {
         self.set_register_x(self.register_a);
     }
 
-    fn bcc(&mut self, mode: &AddressingMode) {
-        if !self.status.contains(CpuFlags::CARRY) {
-            let addr = self.get_operand_address(mode);
-            self.program_counter = addr;
+    fn branch(&mut self, condition: bool) {
+        if condition {
+            let jump: i8 = self.mem_read(self.program_counter) as i8;
+            let jump_addr = self
+                .program_counter
+                .wrapping_add(1)
+                .wrapping_add(jump as u16);
+
+            self.program_counter = jump_addr;
         }
     }
 
-    fn bcs(&mut self, mode: &AddressingMode) {
-        if self.status.contains(CpuFlags::CARRY) {
-            let addr = self.get_operand_address(mode);
-            self.program_counter = addr;
-        }
+    fn bcc(&mut self) {
+        self.branch(!self.status.contains(CpuFlags::CARRY));
     }
 
-    fn beq(&mut self, mode: &AddressingMode) {
-        if self.status.contains(CpuFlags::ZERO) {
-            let addr = self.get_operand_address(mode);
-            self.program_counter = addr;
-        }
+    fn bcs(&mut self) {
+        self.branch(self.status.contains(CpuFlags::CARRY));
     }
 
-    fn bne(&mut self, mode: &AddressingMode) {
-        if !self.status.contains(CpuFlags::ZERO) {
-            let addr = self.get_operand_address(mode);
-            self.program_counter = addr;
-        }
+    fn beq(&mut self) {
+        self.branch(self.status.contains(CpuFlags::ZERO));
+    }
+
+    fn bne(&mut self) {
+        self.branch(!self.status.contains(CpuFlags::ZERO));
     }
 
     fn bit(&mut self, mode: &AddressingMode) {
@@ -453,32 +462,20 @@ impl CPU {
         self.status.set(CpuFlags::OVERFLOW, data & 0b01000000 > 0);
     }
 
-    fn bmi(&mut self, mode: &AddressingMode) {
-        if self.status.contains(CpuFlags::NEGATIV) {
-            let addr = self.get_operand_address(mode);
-            self.program_counter = addr;
-        }
+    fn bmi(&mut self) {
+        self.branch(self.status.contains(CpuFlags::NEGATIV));
     }
 
-    fn bpl(&mut self, mode: &AddressingMode) {
-        if !self.status.contains(CpuFlags::NEGATIV) {
-            let addr = self.get_operand_address(mode);
-            self.program_counter = addr;
-        }
+    fn bpl(&mut self) {
+        self.branch(!self.status.contains(CpuFlags::NEGATIV));
     }
 
-    fn bvc(&mut self, mode: &AddressingMode) {
-        if !self.status.contains(CpuFlags::OVERFLOW) {
-            let addr = self.get_operand_address(mode);
-            self.program_counter = addr;
-        }
+    fn bvc(&mut self) {
+        self.branch(!self.status.contains(CpuFlags::OVERFLOW));
     }
 
-    fn bvs(&mut self, mode: &AddressingMode) {
-        if self.status.contains(CpuFlags::OVERFLOW) {
-            let addr = self.get_operand_address(mode);
-            self.program_counter = addr;
-        }
+    fn bvs(&mut self) {
+        self.branch(self.status.contains(CpuFlags::OVERFLOW));
     }
 
     fn compare(&mut self, mode: &AddressingMode, compare_with: u8) {
