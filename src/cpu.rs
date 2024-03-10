@@ -167,6 +167,8 @@ impl CPU {
                 0xC8 => self.iny(),
                 /* LSR */
                 0x4A | 0x46 | 0x56 | 0x4E | 0x5E => self.lsr(&opcode.mode),
+                /* NOP */
+                0xEA => (),
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode.mode),
                 _ => todo!(),

@@ -177,6 +177,9 @@ lazy_static! {
         OpCode::new(0x56, "LSR", 2, 6, AddressingMode::ZeroPage_X),
         OpCode::new(0x4e, "LSR", 3, 6, AddressingMode::Absolute),
         OpCode::new(0xbe, "LSR", 3, 7, AddressingMode::Absolute_X),
+
+        /*NOP - No Operation */
+        OpCode::new(0xea, "NOP", 1, 2, AddressingMode::NoneAddressing),
         
     ];
 
