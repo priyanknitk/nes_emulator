@@ -177,14 +177,23 @@ impl CPU {
                 /* PHA */
                 0x48 => self.stack_push(self.register_a),
                 /* PHP */
-                0x08 => self.stack_push(self.status.bits()),
+                0x08 => {
+                    let mut flags = self.status.clone();
+                    flags.insert(CpuFlags::BREAK);
+                    flags.insert(CpuFlags::BREAK2);
+                    self.stack_push(flags.bits());
+                },
                 /* PLA */
                 0x68 => {
                     let value = self.stack_pop();
                     self.set_register_a(value);
                 },
                 /* PLP */
-                0x28 => self.status = CpuFlags::from_bits_truncate(self.stack_pop()),
+                0x28 => {
+                    self.status = CpuFlags::from_bits_truncate(self.stack_pop());
+                    self.status.remove(CpuFlags::BREAK);
+                    self.status.insert(CpuFlags::BREAK2);
+                },
                 /* ROL */
                 0x2A => self.rol_accumulator(),
                 0x26 | 0x36 | 0x2E | 0x3E => self.rol(&opcode.mode),
