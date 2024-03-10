@@ -1,6 +1,11 @@
 pub mod cpu;
 pub mod opcodes;
 pub mod cpu_flags;
+pub mod bus;
+
+mod tests;
+
+use bus::Bus;
 use cpu::Mem;
 use cpu::CPU;
 use rand::Rng;
@@ -114,9 +119,11 @@ fn main() {
 
 
     //load the game
-    let mut cpu = CPU::new();
+    let bus = Bus::new();
+    let mut cpu = CPU::new(bus);
     cpu.load(game_code);
     cpu.reset();
+    cpu.program_counter = 0x0600;
 
     let mut screen_state = [0 as u8; 32 * 3 * 32];
     let mut rng = rand::thread_rng();

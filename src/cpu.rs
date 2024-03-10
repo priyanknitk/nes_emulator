@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{cpu_flags::CpuFlags, opcodes};
+use crate::{bus::Bus, cpu_flags::CpuFlags, opcodes};
 
 const STACK_RESET: u8 = 0xfd;
 const STACK_END: u16 = 0x0100;
@@ -46,21 +46,29 @@ pub struct CPU {
     pub status: CpuFlags,
     pub program_counter: u16,
     pub stack_pointer: u8,
-    memory: [u8; 0xffff],
+    pub bus: Bus,
 }
 
 impl Mem for CPU {
     fn mem_read(&self, address: u16) -> u8 {
-        self.memory[address as usize]
+        self.bus.mem_read(address)
     }
 
     fn mem_write(&mut self, address: u16, value: u8) {
-        self.memory[address as usize] = value;
+        self.bus.mem_write(address, value);
+    }
+
+    fn mem_read_u16(&self, pos: u16) -> u16 {
+        self.bus.mem_read_u16(pos)
+    }
+
+    fn mem_write_u16(&mut self, pos: u16, data: u16) {
+        self.bus.mem_write_u16(pos, data)
     }
 }
 
 impl CPU {
-    pub fn new() -> Self {
+    pub fn new(bus: Bus) -> Self {
         CPU {
             register_a: 0,
             register_x: 0,
@@ -68,7 +76,7 @@ impl CPU {
             status: CpuFlags::from_bits_truncate(0b100100),
             program_counter: 0,
             stack_pointer: STACK_RESET,
-            memory: [0; 0xffff],
+            bus,
         }
     }
 
@@ -79,7 +87,9 @@ impl CPU {
     }
 
     pub fn load(&mut self, program: Vec<u8>) {
-        self.memory[0x0600..0x0600 + program.len()].copy_from_slice(&program);
+        for i in 0..(program.len() as u16) {
+            self.mem_write(0x0600 + i, program[i as usize]);
+        }
         self.mem_write_u16(0xFFFC, 0x0600);
     }
 
@@ -102,7 +112,6 @@ impl CPU {
     {
         let ref opcodes: HashMap<u8, &'static opcodes::OpCode> = *opcodes::OPCODES_MAP;
         loop {
-            callback(self);
             let code = self.mem_read(self.program_counter);
             self.program_counter += 1;
             let opcode = opcodes.get(&code).expect("opcode not found");
@@ -247,6 +256,7 @@ impl CPU {
             if program_counter_state == self.program_counter {
                 self.program_counter += (opcode.len - 1) as u16;
             }
+            callback(self);
         }
     }
 
