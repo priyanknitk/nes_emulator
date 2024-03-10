@@ -153,6 +153,9 @@ lazy_static! {
         /* JMP - Jump */
         OpCode::new(0x4c, "JMP", 3, 3, AddressingMode::NoneAddressing),
         OpCode::new(0x6c, "JMP", 3, 5, AddressingMode::NoneAddressing),
+
+        /* JSR - Jump to Subroutine */
+        OpCode::new(0x20, "JSR", 3, 6, AddressingMode::NoneAddressing),
     ];
 
 

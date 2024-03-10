@@ -2,6 +2,9 @@ use std::collections::HashMap;
 
 use crate::{cpu_flags::CpuFlags, opcodes};
 
+const STACK_BEGIN: u8 = 0x0fd;
+const STACK_END: u8 = 0x100;
+
 #[derive(Debug)]
 #[allow(non_camel_case_types)]
 pub enum AddressingMode {
@@ -18,10 +21,10 @@ pub enum AddressingMode {
 }
 
 pub trait Mem {
-    fn mem_read(&self, addr: u16) -> u8; 
+    fn mem_read(&self, addr: u16) -> u8;
 
     fn mem_write(&mut self, addr: u16, data: u8);
-    
+
     fn mem_read_u16(&self, pos: u16) -> u16 {
         let lo = self.mem_read(pos) as u16;
         let hi = self.mem_read(pos + 1) as u16;
@@ -42,6 +45,7 @@ pub struct CPU {
     pub register_y: u8,
     pub status: CpuFlags,
     pub program_counter: u16,
+    pub stack_pointer: u8,
     memory: [u8; 0xffff],
 }
 
@@ -63,6 +67,7 @@ impl CPU {
             register_y: 0,
             status: CpuFlags::from_bits_truncate(0b100100),
             program_counter: 0,
+            stack_pointer: STACK_BEGIN,
             memory: [0; 0xffff],
         }
     }
@@ -84,12 +89,13 @@ impl CPU {
         self.register_y = 0;
         self.status = CpuFlags::from_bits_truncate(0b100100);
         self.program_counter = self.mem_read_u16(0xFFFC);
+        self.stack_pointer = STACK_BEGIN;
     }
 
     pub fn run(&mut self) {
         let ref opcodes: HashMap<u8, &'static opcodes::OpCode> = *opcodes::OPCODES_MAP;
-        loop {      
-            let code  = self.mem_read(self.program_counter);
+        loop {
+            let code = self.mem_read(self.program_counter);
             self.program_counter += 1;
             let opcode = opcodes.get(&code).expect("opcode not found");
             let program_counter_state = self.program_counter;
@@ -128,7 +134,9 @@ impl CPU {
                 /* CLV */
                 0xB8 => self.status.remove(CpuFlags::OVERFLOW),
                 /* CMP */
-                0xC9 | 0xC5 | 0xD5 | 0xCD | 0xDD | 0xD9 | 0xC1 | 0xD1 => self.compare(&opcode.mode, self.register_a),
+                0xC9 | 0xC5 | 0xD5 | 0xCD | 0xDD | 0xD9 | 0xC1 | 0xD1 => {
+                    self.compare(&opcode.mode, self.register_a)
+                }
                 /* CPX */
                 0xE0 | 0xE4 | 0xEC => self.compare(&opcode.mode, self.register_x),
                 /* CPY */
@@ -146,7 +154,9 @@ impl CPU {
                 /* JMP - Absolute */
                 0x4C => self.program_counter = self.mem_read_u16(self.program_counter),
                 /* JMP - Indirect */
-                0x6C =>self.jmp_indirect(),
+                0x6C => self.jmp_indirect(),
+                /* JSR */
+                0x20 => self.jsr(),
                 /* TAX */
                 0xAA => self.tax(),
                 /* INX */
@@ -161,6 +171,33 @@ impl CPU {
                 self.program_counter += (opcode.len - 1) as u16;
             }
         }
+    }
+
+    fn stack_push(&mut self, value: u8) {
+        self.mem_write((STACK_END + self.stack_pointer) as u16, value);
+        self.stack_pointer = self.stack_pointer.wrapping_sub(1);
+    }
+
+    fn stack_pop(&mut self) -> u8 {
+        self.stack_pointer = self.stack_pointer.wrapping_add(1);
+        self.mem_read((STACK_END + self.stack_pointer) as u16)
+    }
+
+    fn stack_push_u16(&mut self, value: u16) {
+        self.stack_push((value >> 8) as u8);
+        self.stack_push((value & 0xff) as u8);
+    }
+
+    fn stack_pop_u16(&mut self) -> u16 {
+        let lo = self.stack_pop() as u16;
+        let hi = self.stack_pop() as u16;
+        (hi << 8) | lo
+    }
+
+    fn jsr(&mut self) {
+        self.stack_push_u16(self.program_counter + 2 - 1);
+        let target_address = self.mem_read_u16(self.program_counter);
+        self.program_counter = target_address
     }
 
     fn jmp_indirect(&mut self) {
