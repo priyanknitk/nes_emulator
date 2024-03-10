@@ -189,6 +189,15 @@ impl CPU {
                 /* ROR */
                 0x6A => self.ror_accumulator(),
                 0x66 | 0x76 | 0x6E | 0x7E => self.ror(&opcode.mode),
+                /* RTI */
+                0x40 => {
+                    self.status = CpuFlags::from_bits_truncate(self.stack_pop());
+                    self.status.remove(CpuFlags::BREAK);
+                    self.status.insert(CpuFlags::BREAK2);
+                    self.program_counter = self.stack_pop_u16();
+                },
+                /* RTS */
+                0x60 => self.program_counter = self.stack_pop_u16() + 1,
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode.mode),
                 _ => todo!(),

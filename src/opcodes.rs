@@ -212,7 +212,17 @@ lazy_static! {
         OpCode::new(0x66, "ROR", 2, 5, AddressingMode::ZeroPage),
         OpCode::new(0x76, "ROR", 2, 6, AddressingMode::ZeroPage_X),
         OpCode::new(0x6e, "ROR", 3, 6, AddressingMode::Absolute),
-        OpCode::new(0x7e, "ROR", 3, 7, AddressingMode::Absolute_X),        
+        OpCode::new(0x7e, "ROR", 3, 7, AddressingMode::Absolute_X),
+
+        /* RTI - Return From Interrupt */
+        OpCode::new(0x40, "RTI", 1, 6, AddressingMode::NoneAddressing),
+        
+        /* RTS - Return From Subroutine */
+        OpCode::new(0x60, "RTS", 1, 6, AddressingMode::NoneAddressing),
+
+        /* SBC - Subtract with Carry */
+        OpCode::new(0xe9, "SBC", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0xe5, "SBC", 2, 3, AddressingMode::ZeroPage),        
     ];
 
 
