@@ -171,6 +171,17 @@ impl CPU {
                 0xEA => (),
                 /* ORA */
                 0x09 | 0x05 | 0x15 | 0x0D | 0x1D | 0x19 | 0x01 | 0x11 => self.set_register_a(self.register_a | self.mem_read(self.get_operand_address(&opcode.mode))),
+                /* PHA */
+                0x48 => self.stack_push(self.register_a),
+                /* PHP */
+                0x08 => self.stack_push(self.status.bits()),
+                /* PLA */
+                0x68 => {
+                    let value = self.stack_pop();
+                    self.set_register_a(value);
+                },
+                /* PLP */
+                0x28 => self.status = CpuFlags::from_bits_truncate(self.stack_pop()),
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => self.and(&opcode.mode),
                 _ => todo!(),
