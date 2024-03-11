@@ -217,6 +217,7 @@ lazy_static! {
         OpCode::new(0x08, "PHP", 1, 3, AddressingMode::NoneAddressing),
         OpCode::new(0x28, "PLP", 1, 4, AddressingMode::NoneAddressing),
 
+
         /* unofficial */
 
         OpCode::new(0xc7, "*DCP", 2, 5, AddressingMode::ZeroPage),
@@ -270,6 +271,7 @@ lazy_static! {
         OpCode::new(0x2b, "*ANC", 2,2, AddressingMode::Immediate),
 
         OpCode::new(0x4b, "*ALR", 2,2, AddressingMode::Immediate),
+        // OpCode::new(0xCB, "IGN", 3,4 /* or 5*/, AddressingMode::Absolute_X),
 
         OpCode::new(0x04, "*NOP", 2,3, AddressingMode::ZeroPage),
         OpCode::new(0x44, "*NOP", 2,3, AddressingMode::ZeroPage),
@@ -326,11 +328,15 @@ lazy_static! {
         // OpCode::new(0xea, "NOP", 1,2, AddressingMode::NoneAddressing),
         OpCode::new(0xfa, "*NOP", 1,2, AddressingMode::NoneAddressing),
 
-        OpCode::new(0x80, "*NOP", 2,2, AddressingMode::Immediate),
-        OpCode::new(0x82, "*NOP", 2,2, AddressingMode::Immediate),
-        OpCode::new(0x89, "*NOP", 2,2, AddressingMode::Immediate),
-        OpCode::new(0xc2, "*NOP", 2,2, AddressingMode::Immediate),
-        OpCode::new(0xe2, "*NOP", 2,2, AddressingMode::Immediate),
+        OpCode::new(0xab, "*LXA", 2, 3, AddressingMode::Immediate), //todo: highly unstable and not used
+        //http://visual6502.org/wiki/index.php?title=6502_Opcode_8B_%28XAA,_ANE%29
+        OpCode::new(0x8b, "*XAA", 2, 3, AddressingMode::Immediate), //todo: highly unstable and not used
+        OpCode::new(0xbb, "*LAS", 3, 2, AddressingMode::Absolute_Y), //todo: highly unstable and not used
+        OpCode::new(0x9b, "*TAS", 3, 2, AddressingMode::Absolute_Y), //todo: highly unstable and not used
+        OpCode::new(0x93, "*AHX", 2, /* guess */ 8, AddressingMode::Indirect_Y), //todo: highly unstable and not used
+        OpCode::new(0x9f, "*AHX", 3, /* guess */ 4/* or 5*/, AddressingMode::Absolute_Y), //todo: highly unstable and not used
+        OpCode::new(0x9e, "*SHX", 3, /* guess */ 4/* or 5*/, AddressingMode::Absolute_Y), //todo: highly unstable and not used
+        OpCode::new(0x9c, "*SHY", 3, /* guess */ 4/* or 5*/, AddressingMode::Absolute_X), //todo: highly unstable and not used
 
         OpCode::new(0xa7, "*LAX", 2, 3, AddressingMode::ZeroPage),
         OpCode::new(0xb7, "*LAX", 2, 4, AddressingMode::ZeroPage_Y),
@@ -343,14 +349,6 @@ lazy_static! {
         OpCode::new(0x97, "*SAX", 2, 4, AddressingMode::ZeroPage_Y),
         OpCode::new(0x8f, "*SAX", 3, 4, AddressingMode::Absolute),
         OpCode::new(0x83, "*SAX", 2, 6, AddressingMode::Indirect_X),
-
-        OpCode::new(0x27, "*RLA", 2, 5, AddressingMode::ZeroPage),
-        OpCode::new(0x37, "*RLA", 2, 6, AddressingMode::ZeroPage_X),
-        OpCode::new(0x2F, "*RLA", 3, 6, AddressingMode::Absolute),
-        OpCode::new(0x3F, "*RLA", 3, 7, AddressingMode::Absolute_X),
-        OpCode::new(0x3b, "*RLA", 3, 7, AddressingMode::Absolute_Y),
-        OpCode::new(0x33, "*RLA", 2, 8, AddressingMode::Indirect_Y),
-        OpCode::new(0x23, "*RLA", 2, 8, AddressingMode::Indirect_X),
 
     ];
 
