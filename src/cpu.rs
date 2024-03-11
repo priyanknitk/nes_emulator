@@ -131,7 +131,9 @@ impl CPU {
                 /* ASL Accumulator */
                 0x0A => self.asl_accumulator(),
                 /* ASL */
-                0x06 | 0x16 | 0x0E | 0x1E => self.asl(&opcode.mode),
+                0x06 | 0x16 | 0x0E | 0x1E => {
+                    self.asl(&opcode.mode);
+                },
                 /* BCC */
                 0x90 => self.bcc(),
                 /* BCS */
@@ -192,7 +194,9 @@ impl CPU {
                 0xC8 => self.iny(),
                 /* LSR */
                 0x4A => self.lsr_accumulator(),
-                0x46 | 0x56 | 0x4E | 0x5E => self.lsr(&opcode.mode),
+                0x46 | 0x56 | 0x4E | 0x5E => {
+                    self.lsr(&opcode.mode);
+                },
                 /* NOP */
                 0xEA => (),
                 /* ORA */
@@ -219,7 +223,9 @@ impl CPU {
                 },
                 /* ROL */
                 0x2A => self.rol_accumulator(),
-                0x26 | 0x36 | 0x2E | 0x3E => self.rol(&opcode.mode),
+                0x26 | 0x36 | 0x2E | 0x3E =>  {
+                    self.rol(&opcode.mode);
+                },
                 /* ROR */
                 0x6A => self.ror_accumulator(),
                 0x66 | 0x76 | 0x6E | 0x7E => {
@@ -305,6 +311,34 @@ impl CPU {
                     let data = self.mem_read(addr);
                     self.sub_from_register_a(data);
                 }
+                /* DCP */
+                0xc7 | 0xd7 | 0xCF | 0xdF | 0xdb | 0xd3 | 0xc3 => {
+                    let addr = self.get_operand_address(&opcode.mode);
+                    let mut data = self.mem_read(addr);
+                    data = data.wrapping_sub(1);
+                    self.mem_write(addr, data);
+                    // self._update_zero_and_negative_flags(data);
+                    if data <= self.register_a {
+                        self.status.insert(CpuFlags::CARRY);
+                    }
+
+                    self.update_zero_and_negative_flags(self.register_a.wrapping_sub(data));
+                }
+                 /* SLO */ //todo tests
+                0x07 | 0x17 | 0x0F | 0x1f | 0x1b | 0x03 | 0x13 => {
+                    let data = self.asl(&opcode.mode);
+                    self.or_with_register_a(data);
+                }
+                /* SRE */ //todo tests
+                0x47 | 0x57 | 0x4F | 0x5f | 0x5b | 0x43 | 0x53 => {
+                    let data = self.lsr(&opcode.mode);
+                    self.xor_with_register_a(data);
+                }
+                /* RLA */
+                0x27 | 0x37 | 0x2F | 0x3F | 0x3b | 0x33 | 0x23 => {
+                    let data = self.rol(&opcode.mode);
+                    self.and_with_register_a(data);
+                }
                 _ => todo!(),
             }
             if program_counter_state == self.program_counter {
@@ -345,6 +379,18 @@ impl CPU {
         let addr = self.get_operand_address(&mode);
         let data = self.mem_read(addr);
         self.add_to_register_a(((data as i8).wrapping_neg().wrapping_sub(1)) as u8);
+    }
+
+    fn xor_with_register_a(&mut self, data: u8) {
+        self.set_register_a(data ^ self.register_a);
+    }
+
+    fn or_with_register_a(&mut self, data: u8) {
+        self.set_register_a(data | self.register_a);
+    }
+
+    fn and_with_register_a(&mut self, data: u8) {
+        self.set_register_a(data & self.register_a);
     }
 
     fn add_to_register_a(&mut self, data: u8) {
@@ -401,7 +447,7 @@ impl CPU {
         self.set_register_a(data);
     }
 
-    fn rol(&mut self, mode: &AddressingMode) {
+    fn rol(&mut self, mode: &AddressingMode) -> u8 {
         let addr = self.get_operand_address(mode);
         let mut data = self.mem_read(addr);
         let old_carry = self.status.contains(CpuFlags::CARRY);
@@ -417,6 +463,7 @@ impl CPU {
         }
         self.mem_write(addr, data);
         self.update_zero_and_negative_flags(data);
+        data
     }
 
     fn ror_accumulator(&mut self) {
@@ -597,15 +644,16 @@ impl CPU {
         self.set_register_a(data)
     }
 
-    fn asl(&mut self, mode: &AddressingMode) {
+    fn asl(&mut self, mode: &AddressingMode) -> u8 {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
         let result = value << 1;
         self.mem_write(addr, result);
         self.update_zero_and_negative_flags(result);
+        result
     }
 
-    fn lsr(&mut self, mode: &AddressingMode) {
+    fn lsr(&mut self, mode: &AddressingMode) -> u8 {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
         let result = value >> 1;
@@ -616,6 +664,7 @@ impl CPU {
         } else {
             self.status.remove(CpuFlags::CARRY);
         }
+        result
     }
 
     fn lsr_accumulator(&mut self) {
