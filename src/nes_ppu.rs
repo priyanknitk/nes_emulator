@@ -1,4 +1,10 @@
-use crate::{cartridge::Mirroring, registers::{addr::AddrRegister, control::ControlRegister, mask::MaskRegister, scroll::ScrollRegister, status::StatusRegister}};
+use crate::{
+    cartridge::Mirroring,
+    registers::{
+        addr::AddrRegister, control::ControlRegister, mask::MaskRegister, scroll::ScrollRegister,
+        status::StatusRegister,
+    },
+};
 
 pub struct NesPPU {
     pub chr_rom: Vec<u8>,
@@ -15,6 +21,7 @@ pub struct NesPPU {
     pub oam_addr: u8,
     scanline: u16,
     cycle: usize,
+    pub nmi_interrupt: Option<u8>,
 }
 
 impl NesPPU {
@@ -34,6 +41,7 @@ impl NesPPU {
             oam_addr: 0,
             scanline: 0,
             cycle: 0,
+            nmi_interrupt: None,
         }
     }
 
@@ -42,7 +50,11 @@ impl NesPPU {
     }
 
     pub fn write_to_ctrl(&mut self, value: u8) {
+        let before_nmi_status = self.ctrl.generate_vblank_nmi();
         self.ctrl.update(value);
+        if !before_nmi_status && self.ctrl.generate_vblank_nmi() && self.status.is_in_vblank() {
+            self.nmi_interrupt = Some(1);
+        }
     }
 
     pub fn write_to_mask(&mut self, value: u8) {
@@ -52,30 +64,27 @@ impl NesPPU {
     fn increment_vram_addr(&mut self) {
         self.addr.increment(self.ctrl.vram_addr_increment());
     }
- 
- 
+
     pub fn read_data(&mut self) -> u8 {
         let addr = self.addr.get();
         self.increment_vram_addr();
- 
- 
- 
+
         match addr {
             0..=0x1fff => {
                 let result = self.internal_data_buf;
                 self.internal_data_buf = self.chr_rom[addr as usize];
                 result
-            },
+            }
             0x2000..=0x2fff => {
                 let result = self.internal_data_buf;
                 self.internal_data_buf = self.vram[self.mirror_vram_addr(addr) as usize];
                 result
-            },
-            0x3000..=0x3eff => panic!("addr space 0x3000..0x3eff is not expected to be used, requested = {} ", addr),
-            0x3f00..=0x3fff =>
-            {
-                self.palette_table[(addr - 0x3f00) as usize]
             }
+            0x3000..=0x3eff => panic!(
+                "addr space 0x3000..0x3eff is not expected to be used, requested = {} ",
+                addr
+            ),
+            0x3f00..=0x3fff => self.palette_table[(addr - 0x3f00) as usize],
             _ => panic!("unexpected access to mirrored space {}", addr),
         }
     }
@@ -83,7 +92,7 @@ impl NesPPU {
     pub fn write_to_data(&mut self, value: u8) {
         let addr = self.addr.get();
         match addr {
-            0..=0x1fff => println!("attempt to write to chr rom space {}", addr), 
+            0..=0x1fff => println!("attempt to write to chr rom space {}", addr),
             0x2000..=0x2fff => {
                 self.vram[self.mirror_vram_addr(addr) as usize] = value;
             }
@@ -94,15 +103,14 @@ impl NesPPU {
                 let add_mirror = addr - 0x10;
                 self.palette_table[(add_mirror - 0x3f00) as usize] = value;
             }
-            0x3f00..=0x3fff =>
-            {
+            0x3f00..=0x3fff => {
                 self.palette_table[(addr - 0x3f00) as usize] = value;
             }
             _ => panic!("unexpected access to mirrored space {}", addr),
         }
         self.increment_vram_addr();
     }
-    
+
     pub fn read_status(&mut self) -> u8 {
         let data = self.status.snapshot();
         self.status.reset_vblank_status();
@@ -136,17 +144,24 @@ impl NesPPU {
             if self.scanline == 241 {
                 if self.ctrl.generate_vblank_nmi() {
                     self.status.set_vblank_status(true);
-                    todo!("Should trigger NMI interrupt")
+                    if self.ctrl.generate_vblank_nmi() {
+                        self.nmi_interrupt = Some(1);
+                    }
                 }
             }
 
             if self.scanline >= 262 {
                 self.scanline = 0;
+                self.nmi_interrupt = None;
                 self.status.reset_vblank_status();
-               return true;
+                return true;
             }
         }
         false
+    }
+
+    pub fn poll_nmi_interrupt(&mut self) -> Option<u8> {
+        self.nmi_interrupt.take()
     }
 
     fn mirror_vram_addr(&self, addr: u16) -> u16 {

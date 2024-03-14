@@ -569,6 +569,19 @@ impl CPU {
         }
     }
 
+    fn interrupt_nmi(&mut self) {
+        self.stack_push_u16(self.program_counter);
+        let mut flag = self.status.clone();
+        flag.set(CpuFlags::BREAK, false);
+        flag.set(CpuFlags::BREAK2, true);
+
+        self.stack_push(flag.bits());
+        self.status.insert(CpuFlags::INTERRUPT_DISABLE);
+
+        self.bus.tick(2);
+        self.program_counter = self.mem_read_u16(0xFFFA);
+    }
+
     pub fn run(&mut self) {
         self.run_with_callback(|_| {});
     }
@@ -580,6 +593,9 @@ impl CPU {
         let ref opcodes: HashMap<u8, &'static opcodes::OpCode> = *opcodes::OPCODES_MAP;
 
         loop {
+            if let Some(_nmi) = self.bus.poll_nmi_status() {
+                self.interrupt_nmi();
+            }
             callback(self);
             let code = self.mem_read(self.program_counter);
             self.program_counter += 1;
@@ -589,9 +605,6 @@ impl CPU {
                 .get(&code)
                 .expect(&format!("OpCode {:x} is not recognized", code));
 
-            // if opcode.code == 0x24 {
-            //     panic!(format!("mem 01 = {}", self.mem_read(0x01)));
-            // }
             match code {
                 0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => {
                     self.lda(&opcode.mode);
