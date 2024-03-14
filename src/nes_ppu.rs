@@ -13,6 +13,8 @@ pub struct NesPPU {
     pub scroll: ScrollRegister,
     internal_data_buf: u8,
     pub oam_addr: u8,
+    scanline: u16,
+    cycle: usize,
 }
 
 impl NesPPU {
@@ -30,6 +32,8 @@ impl NesPPU {
             status: StatusRegister::new(),
             internal_data_buf: 0,
             oam_addr: 0,
+            scanline: 0,
+            cycle: 0,
         }
     }
 
@@ -122,6 +126,27 @@ impl NesPPU {
 
     pub fn write_to_scroll(&mut self, value: u8) {
         self.scroll.write(value);
+    }
+
+    pub fn tick(&mut self, cycles: u8) -> bool {
+        self.cycle += cycles as usize;
+        if self.cycle >= 341 {
+            self.cycle = self.cycle - 341;
+            self.scanline += 1;
+            if self.scanline == 241 {
+                if self.ctrl.generate_vblank_nmi() {
+                    self.status.set_vblank_status(true);
+                    todo!("Should trigger NMI interrupt")
+                }
+            }
+
+            if self.scanline >= 262 {
+                self.scanline = 0;
+                self.status.reset_vblank_status();
+               return true;
+            }
+        }
+        false
     }
 
     fn mirror_vram_addr(&self, addr: u16) -> u16 {

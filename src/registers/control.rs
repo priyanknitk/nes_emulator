@@ -40,6 +40,10 @@ bitflags! {
             32
         }
     }
+
+    pub fn generate_vblank_nmi(&self) -> bool {
+        return self.contains(ControlRegister::GENERATE_NMI);
+    }
  
     pub fn update(&mut self, data: u8) {
         self.bits = data;

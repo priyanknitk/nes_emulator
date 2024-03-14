@@ -38,6 +38,7 @@ pub struct Bus {
     cpu_vram: [u8; 2048],
     prg_rom: Vec<u8>,
     ppu: NesPPU,
+    cycles: usize,
 }
 
 impl Bus {
@@ -47,6 +48,7 @@ impl Bus {
             cpu_vram: [0; 2048],
             prg_rom: rom.prg_rom,
             ppu,
+            cycles: 0,
         }
     }
 
@@ -58,10 +60,15 @@ impl Bus {
         }
         self.prg_rom[addr as usize]
     }
+
+    pub fn tick(&mut self, cycles: u8) {
+        self.cycles += cycles as usize;
+        self.ppu.tick(cycles * 3);
+    }
 }
 
 impl Mem for Bus {
-    fn mem_read(&self, addr: u16) -> u8 {
+    fn mem_read(&mut self, addr: u16) -> u8 {
         match addr {
             RAM..=RAM_MIRRORS_END => {
                 let mirror_down_addr = addr & 0b00000111_11111111;
