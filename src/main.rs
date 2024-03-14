@@ -3,6 +3,8 @@ pub mod cartridge;
 pub mod cpu;
 pub mod opcodes;
 pub mod trace;
+pub mod nes_ppu;
+pub mod registers;
 
 use bus::Bus;
 use cartridge::Rom;
