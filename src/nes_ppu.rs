@@ -41,6 +41,10 @@ impl NesPPU {
         self.ctrl.update(value);
     }
 
+    pub fn write_to_mask(&mut self, value: u8) {
+        self.mask.update(value);
+    }
+
     fn increment_vram_addr(&mut self) {
         self.addr.increment(self.ctrl.vram_addr_increment());
     }
