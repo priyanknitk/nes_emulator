@@ -5,6 +5,7 @@ pub mod opcodes;
 pub mod trace;
 pub mod nes_ppu;
 pub mod registers;
+pub mod render;
 
 use bus::Bus;
 use cartridge::Rom;
